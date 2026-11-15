@@ -1,10 +1,12 @@
 // Static app shell; behaviour lives in public/app.js
+import { logoSvg } from "./logo";
+
 export const markup = `
 <div class="field" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 
 <div class="wrap">
   <div class="top">
-    <div class="app-icon" aria-hidden="true">M</div>
+    ${logoSvg({ className: "app-icon", label: "Money Manager Logo" })}
     <div class="glass pill" id="syncPill"><span class="dot"></span><span id="sync">Lädt …</span></div>
     <button class="glass icon-btn" id="eye" aria-label="Kontostand verbergen"></button>
   </div>
