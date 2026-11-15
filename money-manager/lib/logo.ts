@@ -1,0 +1,42 @@
+// Money Manager app icon: a gold coin dropping into a glass wallet.
+const BODY = `
+  <defs>
+    <linearGradient id="mmBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4ade80"/>
+      <stop offset=".5" stop-color="#10b39a"/>
+      <stop offset="1" stop-color="#1673e6"/>
+    </linearGradient>
+    <linearGradient id="mmCoin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffe79a"/>
+      <stop offset=".55" stop-color="#f7b500"/>
+      <stop offset="1" stop-color="#d98200"/>
+    </linearGradient>
+    <linearGradient id="mmGlass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".95"/>
+      <stop offset="1" stop-color="#fff" stop-opacity=".7"/>
+    </linearGradient>
+    <radialGradient id="mmSheen" cx=".3" cy="0" r=".9">
+      <stop offset="0" stop-color="#fff" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="100" height="100" rx="23" fill="url(#mmBg)"/>
+  <rect width="100" height="100" rx="23" fill="url(#mmSheen)"/>
+  <circle cx="50" cy="35" r="17" fill="url(#mmCoin)"/>
+  <circle cx="50" cy="35" r="11.5" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2.4"/>
+  <g fill="none" stroke="#a86200" stroke-opacity=".6" stroke-width="2.4" stroke-linecap="round"><path d="M55.5 30a6.5 6.5 0 1 0 0 10"/><path d="M43 33.5h8M43 36.8h8"/></g>
+  <rect x="18" y="46" width="64" height="38" rx="13" fill="#0b5f73" fill-opacity=".25" transform="translate(0 2.5)"/>
+  <rect x="18" y="46" width="64" height="38" rx="13" fill="url(#mmGlass)"/>
+  <rect x="18.8" y="46.8" width="62.4" height="36.4" rx="12.2" fill="none" stroke="#fff" stroke-width="1.6"/>
+  <path d="M30 46h40" stroke="#0e8f86" stroke-opacity=".35" stroke-width="2.4" stroke-linecap="round"/>
+  <rect x="60" y="58" width="22" height="14" rx="7" fill="#10b39a"/>
+  <circle cx="68" cy="65" r="3" fill="#fff"/>
+`;
+
+type Opts = { className?: string; label?: string; square?: boolean };
+
+export function logoSvg({ className, label, square }: Opts = {}): string {
+  const attrs = className ? ` class="${className}" role="img" aria-label="${label ?? "Logo"}"` : ` xmlns="http://www.w3.org/2000/svg"`;
+  const body = square ? BODY.replace(/ rx="23"/g, "") : BODY; // iOS rounds home-screen icons itself
+  return `<svg${attrs} viewBox="0 0 100 100">${body}</svg>`;
+}

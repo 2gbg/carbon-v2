@@ -1,0 +1,2 @@
+/* App icon in the top bar (replaces the old "M" tile) */
+.app-icon { width: 40px; height: 40px; flex-shrink: 0; border-radius: 10px; background: none; box-shadow: 0 6px 14px -6px rgba(16, 179, 154, .7); }
