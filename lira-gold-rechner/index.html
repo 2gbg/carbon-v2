@@ -49,10 +49,18 @@ const n=(x,d=2)=>x.toLocaleString('de-DE',{minimumFractionDigits:d,maximumFracti
 const cache={};
 async function rates(date){
   if(cache[date])return cache[date];
-  for(const u of[`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${date}/v1/currencies/try.json`,`https://${date}.currency-api.pages.dev/v1/currencies/try.json`]){
-    try{const r=await fetch(u);if(r.ok)return cache[date]=await r.json()}catch(e){}
+  const tags=[];const base=new Date(date+'T12:00:00Z');
+  for(let i=0;i<7;i++){const d=new Date(base-i*864e5).toISOString().slice(0,10);if(d>='2024-03-02')tags.push(d)}
+  if(date>=new Date(Date.now()-3*864e5).toISOString().slice(0,10))tags.unshift('latest');
+  let reached=false;
+  for(const tag of tags){
+    const urls=[`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${tag}/v1/currencies/try.min.json`,`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${tag}/v1/currencies/try.json`,`https://${tag}.currency-api.pages.dev/v1/currencies/try.json`];
+    for(const u of urls){
+      try{const r=await fetch(u);reached=true;if(r.ok){const j=await r.json();if(j.try&&j.try.xau)return cache[date]=j}}catch(e){}
+    }
   }
-  throw new Error('Für dieses Datum gibt es keine Kurse. Bitte ein Datum ab 02.03.2024 wählen.');
+  if(!reached)throw new Error('Keine Verbindung zum Kursdienst. Bitte die Datei direkt in Safari/Chrome öffnen (nicht in der Vorschau) und Internet prüfen.');
+  throw new Error(date<'2024-03-02'?'Kurse gibt es erst ab 02.03.2024.':'Für dieses Datum wurden keine Kurse gefunden.');
 }
 let tok=0;
 async function run(){
