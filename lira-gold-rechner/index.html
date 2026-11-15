@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lira Gold Rechner</title>
+<style>
+  :root { --bg:#f6f5f1; --card:#fff; --fg:#1d1b16; --muted:#6b665a; --gold:#b8860b; --line:#e3dfd3; --err:#b3261e; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16140f; --card:#211e17; --fg:#f1ece0; --muted:#a39d8d; --gold:#e0b44c; --line:#3a352a; --err:#ff8a80; color-scheme:dark; } }
+  * { box-sizing:border-box; }
+  body { margin:0; font:16px/1.5 system-ui, sans-serif; background:var(--bg); color:var(--fg); padding:24px 16px; }
+  main { max-width:520px; margin:0 auto; display:grid; gap:20px; }
+  h1 { margin:0; font-size:1.6rem; } h1 span { color:var(--gold); }
+  form, .result { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; display:grid; gap:14px; }
+  label { display:grid; gap:6px; font-size:.85rem; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+  input { font:inherit; font-size:1.1rem; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--fg); }
+  button { font:inherit; font-weight:700; padding:12px; border:0; border-radius:8px; background:var(--gold); color:#1d1b16; cursor:pointer; }
+  .row { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid var(--line); }
+  .row:last-of-type { border-bottom:0; }
+  .row b { font-variant-numeric:tabular-nums; font-size:1.15rem; text-align:right; }
+  .note { font-size:.8rem; color:var(--muted); margin:0; }
+  .err { color:var(--err); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Lira → <span>Gold</span> &amp; Euro</h1>
+  <form id="f">
+    <label for="amount">Preis in Türkischen Lira (₺)
+      <input id="amount" type="number" min="0" step="any" value="10000" required>
+    </label>
+    <label for="date">Datum
+      <input id="date" type="date" min="2024-03-02" required>
+    </label>
+    <button type="submit">Umrechnen</button>
+  </form>
+  <section class="result" id="out" hidden></section>
+  <p class="note">Kurse: fawazahmed0 Currency-API (täglich, ab 02.03.2024). Gold = Feingold (24 Karat), 1 Feinunze = 31,1035 g.</p>
+</main>
+<script>
+const OZ = 31.1034768;
+const $ = id => document.getElementById(id);
+$('date').value = $('date').max = new Date().toISOString().slice(0, 10);
+const fmt = (n, d = 2) => n.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+async function rates(date) {
+  const urls = [
+    `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${date}/v1/currencies/try.json`,
+    `https://${date}.currency-api.pages.dev/v1/currencies/try.json`
+  ];
+  for (const u of urls) {
+    try { const r = await fetch(u); if (r.ok) return await r.json(); } catch (e) {}
+  }
+  throw new Error('Für dieses Datum gibt es keine Kurse. Bitte ein Datum ab 02.03.2024 wählen.');
+}
+
+$('f').addEventListener('submit', async e => {
+  e.preventDefault();
+  const amount = parseFloat($('amount').value), date = $('date').value, out = $('out');
+  out.hidden = false; out.innerHTML = '<p class="note">Lade Kurse…</p>';
+  try {
+    const d = await rates(date), t = d.try;
+    const gram = amount * t.xau * OZ;
+    const tryPerGram = 1 / (t.xau * OZ), eurPerGram = tryPerGram * t.eur;
+    out.innerHTML = `
+      <div class="row"><span>Gold</span><b>${fmt(gram, 3)} g</b></div>
+      <div class="row"><span>Euro</span><b>${fmt(amount * t.eur)} €</b></div>
+      <div class="row"><span>1 g Gold</span><b>${fmt(tryPerGram)} ₺ · ${fmt(eurPerGram)} €</b></div>
+      <div class="row"><span>1 €</span><b>${fmt(1 / t.eur, 4)} ₺</b></div>
+      <p class="note">Kursdatum: ${new Date(d.date).toLocaleDateString('de-DE')}</p>`;
+  } catch (err) { out.innerHTML = `<p class="err">${err.message}</p>`; }
+});
+$('f').requestSubmit();
+</script>
+</body>
+</html>
